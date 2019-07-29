@@ -6,8 +6,11 @@ import (
 	"log"
 	"fmt"
 	"os"
+	"time"
+	"strconv"
 	"encoding/base64"
 	"crypto/sha512"
+	"math/rand"
 )
 
 var (
@@ -29,6 +32,30 @@ func IsBase64(s string) bool {
 	return err == nil
 }
 
+func GenRandPass(length int, err error) string {
+	if (length <= 0 || err != nil) {
+		length = 10;
+	}
+	rand.Seed(time.Now().UnixNano())
+	digits := "0123456789"
+	specials := "~=+%^*/()[]{}/!@#$?|"
+	all := "ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
+        "abcdefghijklmnopqrstuvwxyz" +
+        digits + specials
+	buf := make([]byte, length)
+	for i := 0; i < length; i++ {
+        buf[i] = all[rand.Intn(len(all))]
+	}
+	for i := len(buf) - 1; i > 0; i-- {
+        j := rand.Intn(i + 1)
+        buf[i], buf[j] = buf[j], buf[i]
+	}
+	buf[length / 2] = digits[rand.Intn(len(digits))]
+	buf[length - 1] = specials[rand.Intn(len(specials))]
+	str := string(buf)
+	return str;
+}
+
 func main() {
 	var reply string
 	bot, err := tgbotapi.NewBotAPI(telegramBotToken)
@@ -43,17 +70,18 @@ func main() {
 		if update.Message != nil && update.Message.IsCommand() {
 			command := update.Message.Command()
 			arguments := update.Message.CommandArguments()
-			if arguments != "" {
-				switch command {
-				case "sha512":
-					data := []byte(arguments)
-					reply = fmt.Sprintf("%x", sha512.Sum512(data))
-				case "sha384":
-					data := []byte(arguments)
-					reply = fmt.Sprintf("%x", sha512.Sum384(data))
-				default:
-					reply = "Invalid command"
-				}
+			switch command {
+			case "sha512":
+				data := []byte(arguments)
+				reply = fmt.Sprintf("%x", sha512.Sum512(data))
+			case "sha384":
+				data := []byte(arguments)
+				reply = fmt.Sprintf("%x", sha512.Sum384(data))
+			case "pass":
+				length, err := strconv.Atoi(arguments)
+				reply = GenRandPass(length, err)
+			default:
+				reply = "Invalid command"
 			}
 		} else if update.Message != nil {
 			reply = update.Message.Text

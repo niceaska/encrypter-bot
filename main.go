@@ -15,10 +15,12 @@ import (
 
 var (
 	telegramBotToken string
+	debug int
 )
 
 func init() {
 	flag.StringVar(&telegramBotToken, "token", "", "Telegram Bot Token")
+	flag.IntVar(&debug, "debug", 1, "Debug flag")
 	flag.Parse()
 
 	if telegramBotToken == "" {
@@ -62,7 +64,9 @@ func main() {
 	if err != nil {
 		log.Panic(err)
 	}
-	log.Printf("Authorized on account %s", bot.Self.UserName)
+	if (debug == 1) {
+		log.Printf("Authorized on account %s", bot.Self.UserName)
+	}
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 	updates, err := bot.GetUpdatesChan(u)
@@ -95,7 +99,9 @@ func main() {
 				reply = string(base64.StdEncoding.EncodeToString([]byte(reply)))
 			}
 		}
-		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
+		if (debug == 1 && update.Message != nil) {
+			log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
+		}
 		msg := tgbotapi.NewMessage(update.Message.Chat.ID, reply)
 		bot.Send(msg)
 	}

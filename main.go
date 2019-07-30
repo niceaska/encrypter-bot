@@ -58,6 +58,16 @@ func GenRandPass(length int, err error) string {
 	return str;
 }
 
+func GetHelp() (str string) {
+	str = "By default this bot convert messages to or from base64.\n" +
+			"Also current commands supported:\n" +
+			"/sha384 - Get sha384 hash of string (e.g '/sha384 Hello')\n" +
+			"/sha512 - Get sha512 hash of string (e.g '/sha512 Hello')\n" +
+			"/pass - Generate random passworld string N length (e.g '/pass 10')\n" +
+			"/help - Show this message";
+	return
+}
+
 func main() {
 	var reply string
 	bot, err := tgbotapi.NewBotAPI(telegramBotToken)
@@ -84,6 +94,11 @@ func main() {
 			case "pass":
 				length, err := strconv.Atoi(arguments)
 				reply = GenRandPass(length, err)
+			case "start":
+				reply = "Hi, I'm encypter bot." +
+						"I can help you to encrypt text or get hashs"
+			case "help":
+				reply = GetHelp()
 			default:
 				reply = "Invalid command"
 			}

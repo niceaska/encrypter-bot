@@ -99,10 +99,12 @@ func main() {
 				reply = string(base64.StdEncoding.EncodeToString([]byte(reply)))
 			}
 		}
-		if (debug == 1 && update.Message != nil) {
-			log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
+		if (update.Message != nil) {
+			if (debug == 1) {
+				log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
+			}
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, reply)
+			bot.Send(msg)
 		}
-		msg := tgbotapi.NewMessage(update.Message.Chat.ID, reply)
-		bot.Send(msg)
 	}
 }
